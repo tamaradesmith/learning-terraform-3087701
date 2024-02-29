@@ -33,16 +33,72 @@ module "blog_vpc" {
   }
 }
 
-resource "aws_instance" "blog" {
-  ami           = data.aws_ami.app_ami.id
+module "autoscaling" {
+  source  = "terraform-aws-modules/autoscaling/aws"
+  version = "7.4.0"
+
+  name     = 'blog'
+  min_size = 1
+  max-size = 2
+
+  vpc_zone_identifier = module.blog_vpc.public_subnets
+  target_group_arns   = module.blog_alb.target_group_arns
+  security_groups     = [module.blog_sq.security_group_id]
+
+  iamge_id      = data.aws_ami.app_ami.id
   instance_type = var.instance_type
 
-  vpc_security_group_ids = [module.blog_sq.security_group_id]
+}
 
-  subnet_id = module.blog_vpc.public_subnets[0]
+
+
+#  not updated  for new module code this is not right
+module "blog_alb" {
+  source = "terraform-aws-modules/alb/aws"
+
+  name     = "blog_alb"
+
+  vpc_id         = module.blog_vpc.vpc_id
+  subnets        = module.blog_vpc.public_subnets
+  security_group = [module.blog_sg.security_group_id]
+
+  # Security Group
+  security_group_ingress_rules = module.blog_sg.security_group_id
+  security_group_egress_rules  = module.blog_sg.security_group_id
+
+  listeners = {
+    ex-http-https-redirect = {
+      port     = 80
+      protocol = "HTTP"
+      redirect = {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
+    }
+    ex-https = {
+      port            = 443
+      protocol        = "HTTPS"
+      certificate_arn = "arn:aws:iam::123456789012:server-certificate/test_cert-123456789012"
+
+      forward = {
+        target_group_key = "ex-instance"
+      }
+    }
+  }
+
+  target_groups = {
+    ex-instance = {
+      name_prefix      = "blog-"
+      protocol         = "HTTP"
+      port             = 80
+      target_type      = "instance"
+    }
+  }
 
   tags = {
-    Name = "HelloWorld"
+    Environment = "Development"
+    Project     = "Example"
   }
 }
 
