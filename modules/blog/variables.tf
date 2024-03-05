@@ -17,13 +17,8 @@ variable "ami_filter" {
   }
 }
 
-data "aws_vpc" "default" {
-  default = true
-}
-
-
 variable enviroment {
-  description = 'Development Environment'
+  description = "Development Environment"
 
   type = object({
     name            = string
@@ -36,12 +31,12 @@ variable enviroment {
   }
 }
 
-variable 'asg_min_size' {
+variable "asg_min_size" {
   description = "Minimun number of instances in the ASG"
   default     = 1
 }
 
-variable 'asg_max_size' {
+variable "asg_max_size" {
   description = "Maxnimun number of instances in the ASG"
   default     = 2
 }

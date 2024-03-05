@@ -3,7 +3,7 @@ module "qa" {
 
   enviroment = {
     name            = "qa"
-    newtwork_prefix = '10.1'
+    newtwork_prefix = "10.1"
   }
 
   asg_max_size = 1
