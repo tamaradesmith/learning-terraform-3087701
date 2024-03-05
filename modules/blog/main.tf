@@ -37,7 +37,7 @@ module "autoscaling" {
   source  = "terraform-aws-modules/autoscaling/aws"
   version = "7.4.0"
 
-  name     = '${var.enviroment.name}-blog'
+  name     = "${var.enviroment.name}-blog"
   min_size = var.asg_min_size
   max-size = var.asg_max_size
 
